@@ -3,19 +3,30 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-const { testConnection } = require('./config/database');
+// تحديد ملف قاعدة البيانات حسب البيئة
+const isProduction = process.env.NODE_ENV === 'production';
+const isHostinger = process.env.DB_HOST === '92.113.22.21';
+
+const databaseConfig = isHostinger 
+  ? require('./config/database-production')
+  : require('./config/database');
+
+const { testConnection } = databaseConfig;
 const apiRoutes = require('./routes/api');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 console.log('🚀 بدء تشغيل خادم نظام إدارة الحضور...');
+console.log('🌍 البيئة:', isProduction ? 'إنتاج' : 'تطوير');
+console.log('🗄️ قاعدة البيانات:', isHostinger ? 'Hostinger MySQL' : 'محلي');
 console.log('📍 المنفذ:', PORT);
-console.log('🌍 البيئة:', process.env.NODE_ENV || 'development');
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: isProduction 
+    ? ['https://your-vercel-app.vercel.app', 'https://your-domain.com']
+    : ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001'],
   credentials: true
 }));
 app.use(express.json());

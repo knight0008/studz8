@@ -1,24 +1,18 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-// تحديد نوع البيئة
-const isProduction = process.env.NODE_ENV === 'production';
-const isHostinger = process.env.DB_HOST === '92.113.22.21';
-
-console.log('🔧 إعدادات قاعدة البيانات:');
-console.log('البيئة:', isProduction ? 'إنتاج' : 'تطوير');
-console.log('نوع الخادم:', isHostinger ? 'Hostinger' : 'محلي');
+console.log('🔧 إعدادات قاعدة البيانات للإنتاج:');
 console.log('DB_HOST:', process.env.DB_HOST);
 console.log('DB_USER:', process.env.DB_USER);
 console.log('DB_NAME:', process.env.DB_NAME);
 console.log('DB_PASSWORD:', process.env.DB_PASSWORD ? '[محدد]' : '[فارغ]');
 
-// إعدادات قاعدة البيانات
+// إعدادات قاعدة البيانات للإنتاج (Hostinger)
 const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'attendance_system',
+  host: process.env.DB_HOST || '92.113.22.21',
+  user: process.env.DB_USER || 'u723596365_HossamStudent',
+  password: process.env.DB_PASSWORD || 'h?9a[ssGJrO',
+  database: process.env.DB_NAME || 'u723596365_HossamStudent',
   port: parseInt(process.env.DB_PORT) || 3306,
   charset: 'utf8mb4',
   timezone: '+00:00',
@@ -29,28 +23,27 @@ const dbConfig = {
   supportBigNumbers: true,
   bigNumberStrings: true,
   dateStrings: false,
-  // إعدادات SSL للـ Hostinger
-  ssl: isHostinger ? {
+  ssl: {
     rejectUnauthorized: false
-  } : false
+  }
 };
 
-// إنشاء pool للاتصالات
+// إنشاء pool للاتصالات مع إعدادات محسنة للإنتاج
 const pool = mysql.createPool({
   ...dbConfig,
   waitForConnections: true,
-  connectionLimit: isProduction ? 20 : 10,
+  connectionLimit: 10,
   queueLimit: 0,
   acquireTimeout: 60000,
   timeout: 60000,
-  idleTimeout: isProduction ? 300000 : 60000,
+  idleTimeout: 300000,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0
 });
 
 // معالجة أحداث Pool
 pool.on('connection', function (connection) {
-  console.log('🔗 اتصال جديد بقاعدة البيانات:', connection.threadId);
+  console.log('🔗 اتصال جديد بقاعدة البيانات Hostinger:', connection.threadId);
 });
 
 pool.on('error', function(err) {
@@ -62,47 +55,47 @@ pool.on('error', function(err) {
   }
 });
 
-// اختبار الاتصال
+// اختبار الاتصال مع معالجة أخطاء Hostinger
 async function testConnection() {
   try {
-    console.log('🧪 اختبار الاتصال بقاعدة البيانات...');
+    console.log('🧪 اختبار الاتصال بقاعدة البيانات Hostinger...');
     const connection = await pool.getConnection();
     
     // اختبار استعلام بسيط
-    const [rows] = await connection.execute('SELECT 1 as test');
+    const [rows] = await connection.execute('SELECT 1 as test, NOW() as server_time');
     console.log('📊 نتيجة الاختبار:', rows);
     
-    console.log('✅ تم الاتصال بقاعدة البيانات بنجاح');
+    // اختبار الجداول الموجودة
+    const [tables] = await connection.execute('SHOW TABLES');
+    console.log('📋 الجداول الموجودة:', tables.length);
+    
+    console.log('✅ تم الاتصال بقاعدة البيانات Hostinger بنجاح');
     connection.release();
     return true;
   } catch (error) {
-    console.error('❌ خطأ في الاتصال بقاعدة البيانات:', error);
+    console.error('❌ خطأ في الاتصال بقاعدة البيانات Hostinger:', error);
     console.error('تفاصيل الخطأ:', {
       code: error.code,
       errno: error.errno,
       sqlMessage: error.sqlMessage,
       sqlState: error.sqlState
     });
-    console.error('❌ خطأ في الاتصال بقاعدة البيانات:');
-    console.error('   الرسالة:', error.message);
-    console.error('   الكود:', error.code);
-    console.error('   errno:', error.errno);
     
     if (error.code === 'ER_BAD_DB_ERROR') {
-      console.log('💡 نصيحة: تأكد من إنشاء قاعدة البيانات attendance_system في phpMyAdmin');
+      console.log('💡 نصيحة: تأكد من إنشاء قاعدة البيانات u723596365_HossamStudent في Hostinger');
     } else if (error.code === 'ECONNREFUSED') {
-      console.log('💡 نصيحة: تأكد من تشغيل MySQL في XAMPP');
+      console.log('💡 نصيحة: تأكد من صحة عنوان IP وإعدادات الشبكة في Hostinger');
     } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-      console.log('💡 نصيحة: تحقق من اسم المستخدم وكلمة المرور في ملف .env');
+      console.log('💡 نصيحة: تحقق من اسم المستخدم وكلمة المرور في Hostinger');
+    } else if (error.code === 'ENOTFOUND') {
+      console.log('💡 نصيحة: تحقق من عنوان الخادم 92.113.22.21');
     }
     
-    console.log('🛑 إيقاف الخادم بسبب فشل الاتصال بقاعدة البيانات');
-    process.exit(1);
     return false;
   }
 }
 
-// دالة تنفيذ الاستعلامات
+// دالة تنفيذ الاستعلامات مع معالجة أخطاء Hostinger
 async function executeQuery(query, params = []) {
   try {
     console.log('🔍 تنفيذ الاستعلام:', query.substring(0, 100) + (query.length > 100 ? '...' : ''));
@@ -127,11 +120,6 @@ async function executeQuery(query, params = []) {
       sqlMessage: error.sqlMessage,
       sqlState: error.sqlState
     });
-    
-    // تحسين رسائل الخطأ للكلمات المحجوزة
-    if (error.code === 'ER_PARSE_ERROR' && error.sqlMessage && error.sqlMessage.includes('timestamp')) {
-      console.error('💡 نصيحة: يبدو أن هناك مشكلة مع كلمة محجوزة "timestamp". تأكد من استخدام قاعدة البيانات المصححة.');
-    }
     
     throw error;
   }

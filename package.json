@@ -11,11 +11,16 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "node server/server.js",
+    "build:vercel": "npm run build",
+    "start:production": "NODE_ENV=production node server/server.js",
     "db:setup": "mysql -u root -p < database/attendance_system.sql",
+    "db:setup:hostinger": "node scripts/setup-hostinger-db.js",
     "whatsapp:init": "node scripts/init-whatsapp.js",
+    "whatsapp:local": "node scripts/venom-local-setup.js",
     "whatsapp:test": "node scripts/test-whatsapp.js",
     "whatsapp:clean": "node scripts/clean-tokens.js",
-    "whatsapp:status": "node scripts/check-status.js"
+    "whatsapp:status": "node scripts/check-status.js",
+    "deploy:prepare": "npm run build && npm run db:setup:hostinger"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
