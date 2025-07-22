@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "node server/server.js",
-    "build:vercel": "npm run build",
+    "build:vercel": "vite build",
     "start:production": "NODE_ENV=production node server/server.js",
     "db:setup": "mysql -u root -p < database/attendance_system.sql",
     "db:setup:hostinger": "node scripts/setup-hostinger-db.js",

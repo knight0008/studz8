@@ -105,9 +105,10 @@ SESSION_SECRET=your-super-secret-session-key-change-this-in-production
 
 ### 4.4 إعدادات البناء
 - **Framework Preset**: Vite
-- **Build Command**: `npm run build:vercel`
+- **Build Command**: `npm run build`
 - **Output Directory**: `dist`
 - **Install Command**: `npm install`
+- **Root Directory**: `./` (اتركه فارغ)
 
 ### 4.5 النشر
 1. اضغط "Deploy"
